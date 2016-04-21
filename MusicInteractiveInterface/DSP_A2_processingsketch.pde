@@ -1,11 +1,17 @@
-/**************************************************** //<>// //<>//
+/****************************************************  //<>// //<>// //<>// //<>// //<>//
  MMT: DSP & Audio Programming
  ****************************************************
  * 
  * Processing Sketch by Joan Sandoval
  * 
+ *
+ *  --> Idea of the circular waveform: http://openprocessing.org/sketch/8846
+ *
+ *  --> Idea of the linking lines: http://ejohn.org/apps/processing.js/examples/topics/scribbleplotter.html
+ *
+ *
+ *
  ***********************************/
-
 
 //import libraries
 import processing.serial.*;  
@@ -14,7 +20,11 @@ import ddf.minim.ugens.*;
 import controlP5.*;
 
 //Variables for getting the data from Arduino
+String port0;
+String port1 = "/dev/cu.usbmodem1421";
+String port2 = "/dev/cu.usbmodem1411";
 Serial port; 
+boolean portExists = false;
 int [] inputs = new int[6];
 String stringIn;
 boolean avoid_error = false;
@@ -54,13 +64,27 @@ int square = 0;
 int saw = 0;
 
 
-
 //SETUP, just once
 void setup() {
   clear();
   size(displayWidth, displayHeight, P3D);
-  //Serial port to get data
-  port = new Serial(this, "/dev/cu.usbmodem1411", 9600);
+
+  printArray(Serial.list());
+
+  //Check if serial port exists
+  for (int i=0; i<Serial.list().length; i++) {  
+    port0 = Serial.list()[i];
+    if (port0.equals(port1) || port0.equals(port2)) {
+      portExists = true;
+    }
+  }
+
+  //get the data from the serial port
+  if (portExists) {
+    port = new Serial(this, "/dev/cu.usbmodem1421", 9600);
+    port.bufferUntil('\n');
+  }
+
   frameRate(30);
 
   //Initialise inputs (I found sometimes I was receiving more than 4 values so 
@@ -71,7 +95,7 @@ void setup() {
   inputs[3]=0;
   inputs[4]=0;
   inputs[5]=0;
-  port.bufferUntil('\n');
+
 
   //variables initialisation
   figures = new ArrayList();
@@ -396,7 +420,7 @@ void scribble(float x1, float y1, float x2, float y2, int steps, float scribVal)
   }
 }
 
-
+//Show/Hide User Interface
 void hideSliders() {
   if (display == false) {
     sineh.hide();
